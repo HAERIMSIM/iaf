@@ -1,0 +1,13 @@
+package com.example.iaf;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class IafApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(IafApplication.class, args);
+    }
+
+}

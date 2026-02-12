@@ -23,12 +23,13 @@ public class AnalysisService {
         return analysisMapper.selectClientList();
     }
 
+    public List<String> getCategoryListByClientId(Long clientId) {
+        return analysisMapper.selectCategoryListByClientId(clientId);
+    }
+
     public List<AnalysisResult> getAnalysisResult(AnalysisSearchParam param) {
         if (param.getBaseDate() == null || param.getBaseDate().isBlank()) {
             param.setBaseDate(LocalDate.now().toString());
-        }
-        if (param.getRecentDays() == null) {
-            param.setRecentDays(7);
         }
         return analysisMapper.selectAnalysisResult(param);
     }

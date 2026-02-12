@@ -10,5 +10,6 @@ import java.util.List;
 @Mapper
 public interface AnalysisMapper {
     List<Client> selectClientList();
+    List<String> selectCategoryListByClientId(Long clientId);
     List<AnalysisResult> selectAnalysisResult(AnalysisSearchParam param);
 }

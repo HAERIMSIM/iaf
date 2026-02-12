@@ -4,11 +4,11 @@ public class AnalysisResult {
     private String category;
     private String skuCode;
     private String skuName;
-    private Integer inboundQty;
-    private Integer outboundQty;
     private Integer onHandQty;
-    private Double avgDailyOutbound;
-    private String estimatedSoldOutDate;
+    private Double avgDailyOutboundRecent7days;
+    private Double avgDailyOutboundRecent28days;
+    private String estimatedSoldOutDateRecent7days;
+    private String estimatedSoldOutDateRecent28days;
     private String status;
     private String recommendation;
 
@@ -18,16 +18,16 @@ public class AnalysisResult {
     public void setSkuCode(String skuCode) { this.skuCode = skuCode; }
     public String getSkuName() { return skuName; }
     public void setSkuName(String skuName) { this.skuName = skuName; }
-    public Integer getInboundQty() { return inboundQty; }
-    public void setInboundQty(Integer inboundQty) { this.inboundQty = inboundQty; }
-    public Integer getOutboundQty() { return outboundQty; }
-    public void setOutboundQty(Integer outboundQty) { this.outboundQty = outboundQty; }
     public Integer getOnHandQty() { return onHandQty; }
     public void setOnHandQty(Integer onHandQty) { this.onHandQty = onHandQty; }
-    public Double getAvgDailyOutbound() { return avgDailyOutbound; }
-    public void setAvgDailyOutbound(Double avgDailyOutbound) { this.avgDailyOutbound = avgDailyOutbound; }
-    public String getEstimatedSoldOutDate() { return estimatedSoldOutDate; }
-    public void setEstimatedSoldOutDate(String estimatedSoldOutDate) { this.estimatedSoldOutDate = estimatedSoldOutDate; }
+    public Double getAvgDailyOutboundRecent7days() { return avgDailyOutboundRecent7days; }
+    public void setAvgDailyOutboundRecent7days(Double avgDailyOutboundRecent7days) { this.avgDailyOutboundRecent7days = avgDailyOutboundRecent7days; }
+    public Double getAvgDailyOutboundRecent28days() { return avgDailyOutboundRecent28days; }
+    public void setAvgDailyOutboundRecent28days(Double avgDailyOutboundRecent28days) { this.avgDailyOutboundRecent28days = avgDailyOutboundRecent28days; }
+    public String getEstimatedSoldOutDateRecent7days() { return estimatedSoldOutDateRecent7days; }
+    public void setEstimatedSoldOutDateRecent7days(String estimatedSoldOutDateRecent7days) { this.estimatedSoldOutDateRecent7days = estimatedSoldOutDateRecent7days; }
+    public String getEstimatedSoldOutDateRecent28days() { return estimatedSoldOutDateRecent28days; }
+    public void setEstimatedSoldOutDateRecent28days(String estimatedSoldOutDateRecent28days) { this.estimatedSoldOutDateRecent28days = estimatedSoldOutDateRecent28days; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public String getRecommendation() { return recommendation; }

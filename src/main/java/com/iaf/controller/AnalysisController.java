@@ -7,6 +7,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.List;
 
 @Controller
 public class AnalysisController {
@@ -23,10 +26,19 @@ public class AnalysisController {
                            @RequestParam(name = "search", required = false) String search,
                            Model model) {
         model.addAttribute("clientList", analysisService.getClientList());
+        if (searchParam.getClientId() != null) {
+            model.addAttribute("categoryList", analysisService.getCategoryListByClientId(searchParam.getClientId()));
+        }
         if (search != null) {
             model.addAttribute("analysisList", analysisService.getAnalysisResult(searchParam));
         }
         model.addAttribute("searchParam", searchParam);
         return "analysis";
+    }
+
+    @GetMapping("/analysis/categories")
+    @ResponseBody
+    public List<String> getCategoriesByClient(@RequestParam Long clientId) {
+        return analysisService.getCategoryListByClientId(clientId);
     }
 }

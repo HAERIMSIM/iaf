@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iaf.mapper.BatchLogMapper">
+
+    <insert id="insertBatchLog" parameterType="BatchLog">
+        INSERT INTO BATCH_LOG (batch_name, base_date, status, insert_count, elapsed_ms, error_message)
+        VALUES (#{batchName}, #{baseDate}, #{status}, #{insertCount}, #{elapsedMs}, #{errorMessage})
+    </insert>
+
+</mapper>

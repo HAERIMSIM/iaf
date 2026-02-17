@@ -1,12 +1,10 @@
 package com.iaf.controller;
 
+import com.iaf.service.OmsNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +15,12 @@ public class OmsMockController {
 
     private static final Logger log = LoggerFactory.getLogger(OmsMockController.class);
 
+    private final OmsNotificationService omsNotificationService;
     private final List<Map<String, Object>> receivedAlerts = new ArrayList<>();
+
+    public OmsMockController(OmsNotificationService omsNotificationService) {
+        this.omsNotificationService = omsNotificationService;
+    }
 
     @PostMapping("/api/oms/alert")
     public ResponseEntity<Map<String, String>> receiveIafAlert(@RequestBody Map<String, Object> payload) {
@@ -35,5 +38,11 @@ public class OmsMockController {
     @GetMapping("/api/oms/alert/history")
     public ResponseEntity<List<Map<String, Object>>> getReceivedAlerts() {
         return ResponseEntity.ok(receivedAlerts);
+    }
+
+    @GetMapping("/api/oms/alert/test")
+    public ResponseEntity<String> testOmsNotification(@RequestParam String baseDate) {
+        omsNotificationService.sendNotification(baseDate);
+        return ResponseEntity.ok("OK");
     }
 }

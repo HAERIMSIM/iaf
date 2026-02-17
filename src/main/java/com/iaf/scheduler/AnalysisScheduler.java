@@ -15,7 +15,8 @@ import java.time.LocalDate;
 public class AnalysisScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(AnalysisScheduler.class);
-    private static final String BATCH_NAME = "IAF_ANALYSIS_RESULT";
+    private static final String BATCH_NAME_ANALYSIS = "IAF_ANALYSIS_RESULT";
+    private static final String BATCH_NAME_OMS = "IAF_OMS_NOTIFICATION";
 
     private final AnalysisService analysisService;
     private final BatchLogService batchLogService;
@@ -36,7 +37,7 @@ public class AnalysisScheduler {
         AnalysisSearchParam param = new AnalysisSearchParam();
         param.setBaseDate(baseDate);
 
-        log.info("[{} BATCH START] - baseDate: {}", BATCH_NAME, baseDate);
+        log.info("[{} START] baseDate: {}", BATCH_NAME_ANALYSIS, baseDate);
         long startTime = System.currentTimeMillis();
         try {
             int insertCount = analysisService.insertAnalysisResult(param);
@@ -45,19 +46,19 @@ public class AnalysisScheduler {
             String status = insertCount > 0 ? "SUCCESS" : "WARNING";
 
             if (insertCount == 0) {
-                log.warn("[{} BATCH WARNING] - baseDate: {}, 적재 건수 0건", BATCH_NAME, baseDate);
+                log.warn("[{} WARNING] baseDate: {}, 적재 건수 0건", BATCH_NAME_ANALYSIS, baseDate);
             }
 
-            log.info("[{} BATCH {}] - baseDate: {}, 적재 건수: {}, 소요시간: {}ms", BATCH_NAME, status, baseDate, insertCount, elapsed);
+            log.info("[{} END] baseDate: {}, 적재 건수: {}, 소요시간: {}ms", BATCH_NAME_ANALYSIS, baseDate, insertCount, elapsed);
 
-            batchLogService.save(BATCH_NAME, baseDate, status, insertCount, elapsed, null);
+            batchLogService.save(BATCH_NAME_ANALYSIS, baseDate, status, insertCount, elapsed, null);
 
         } catch (Exception e) {
             long elapsed = System.currentTimeMillis() - startTime;
 
-            log.error("[{} BATCH ERROR] - baseDate: {}, 소요시간: {}ms", BATCH_NAME, baseDate, elapsed, e);
+            log.error("[{} ERROR] baseDate: {}, 소요시간: {}ms", BATCH_NAME_ANALYSIS, baseDate, elapsed, e);
 
-            batchLogService.save(BATCH_NAME, baseDate, "FAIL", 0, elapsed, e.getMessage());
+            batchLogService.save(BATCH_NAME_ANALYSIS, baseDate, "FAIL", 0, elapsed, e.getMessage());
         }
     }
 
@@ -65,11 +66,23 @@ public class AnalysisScheduler {
     public void runDailyOmsNotification() {
         String baseDate = LocalDate.now().toString();
 
-        if (!batchLogService.isCompleted(BATCH_NAME, baseDate)) {
-            log.warn("[IAF_OMS_NOTIFICATION] baseDate: {} - ANALYSIS_RESULT 적재 미완료, OMS 발송 생략", baseDate);
+        if (!batchLogService.isCompleted(BATCH_NAME_ANALYSIS, baseDate)) {
+            log.warn("[{}] baseDate: {} - ANALYSIS_RESULT 적재 미완료, OMS 발송 생략", BATCH_NAME_OMS, baseDate);
+            batchLogService.save(BATCH_NAME_OMS, baseDate, "SKIP", 0, 0, "ANALYSIS_RESULT 적재 미완료");
             return;
         }
 
-        omsNotificationService.sendAlerts(baseDate);
+        log.info("[{} START] baseDate: {}", BATCH_NAME_OMS, baseDate);
+        long startTime = System.currentTimeMillis();
+        try {
+            omsNotificationService.sendNotification(baseDate);
+            long elapsed = System.currentTimeMillis() - startTime;
+            log.info("[{} END] baseDate: {}, 소요시간: {}ms", BATCH_NAME_OMS, baseDate, elapsed);
+            batchLogService.save(BATCH_NAME_OMS, baseDate, "SUCCESS", 0, elapsed, null);
+        } catch (Exception e) {
+            long elapsed = System.currentTimeMillis() - startTime;
+            log.error("[{} ERROR] baseDate: {}, 소요시간: {}ms", BATCH_NAME_OMS, baseDate, elapsed, e);
+            batchLogService.save(BATCH_NAME_OMS, baseDate, "FAIL", 0, elapsed, e.getMessage());
+        }
     }
 }

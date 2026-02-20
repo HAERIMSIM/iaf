@@ -95,7 +95,7 @@
         ) t
     </insert>
 
-    <select id="selectAlertsByClientAndBaseDate" parameterType="AnalysisSearchParam" resultType="AnalysisResult">
+    <select id="selectAlertsByClientAndBaseDate" parameterType="SearchParam" resultType="AnalysisResult">
         SELECT client_id, base_date, sku_code, sku_name, category, available_qty, days_remaining, status, recommendation
         FROM ANALYSIS_RESULT
         WHERE base_date = #{baseDate}
@@ -104,7 +104,22 @@
         ORDER BY days_remaining
     </select>
 
-    <select id="selectAnalysisResult" parameterType="AnalysisSearchParam" resultType="AnalysisResult">
+    <select id="countAnalysisResult" parameterType="SearchParam" resultType="int">
+        SELECT COUNT(*)
+        FROM ANALYSIS_RESULT ar
+        WHERE ar.base_date = #{baseDate}
+        <if test="clientId != null">
+            AND ar.client_id = #{clientId}
+        </if>
+        <if test="category != null and category != ''">
+            AND ar.category = #{category}
+        </if>
+        <if test="status != null and status != ''">
+            AND ar.status = #{status}
+        </if>
+    </select>
+
+    <select id="selectAnalysisResult" parameterType="SearchParam" resultType="AnalysisResult">
         SELECT
             ar.client_id,
             ar.base_date,
@@ -121,8 +136,15 @@
             ar.recommendation,
             onh.status AS oms_status
         FROM ANALYSIS_RESULT ar
-        LEFT JOIN OMS_NOTIFICATION_HISTORY onh
-            ON ar.client_id = onh.client_id AND ar.base_date = onh.base_date
+        LEFT JOIN (
+            SELECT client_id, base_date, status
+            FROM OMS_NOTIFICATION_HISTORY
+            WHERE history_id IN (
+                SELECT MAX(history_id)
+                FROM OMS_NOTIFICATION_HISTORY
+                GROUP BY client_id, base_date
+            )
+        ) onh ON ar.client_id = onh.client_id AND ar.base_date = onh.base_date
         WHERE ar.base_date = #{baseDate}
         <if test="clientId != null">
             AND ar.client_id = #{clientId}
@@ -130,10 +152,11 @@
         <if test="category != null and category != ''">
             AND ar.category = #{category}
         </if>
-        <if test="statusFilter != null and statusFilter != ''">
-            AND ar.status = #{statusFilter}
+        <if test="status != null and status != ''">
+            AND ar.status = #{status}
         </if>
         ORDER BY ar.category, ar.sku_code
+        LIMIT #{pageSize} OFFSET #{offset}
     </select>
 
 </mapper>

@@ -34,7 +34,7 @@
             <select id="clientId" name="clientId">
                 <option value="">전체</option>
                 <c:forEach var="client" items="${clientList}">
-                    <option value="${client.clientId}" <c:if test="${clientId == client.clientId}">selected</c:if>>${client.clientName}</option>
+                    <option value="${client.clientId}" <c:if test="${searchParam.clientId == client.clientId}">selected</c:if>>${client.clientName}</option>
                 </c:forEach>
             </select>
         </div>
@@ -42,19 +42,20 @@
     <div class="form-row">
         <div class="form-item">
             <label for="baseDate">기준일</label>
-            <input type="date" id="baseDate" name="baseDate" value="${baseDate}">
+            <input type="date" id="baseDate" name="baseDate" value="${searchParam.baseDate}">
         </div>
         <div class="form-item">
             <label for="status">전송유형</label>
             <select id="status" name="status">
                 <option value="">전체</option>
-                <option value="SUCCESS" <c:if test="${status == 'SUCCESS'}">selected</c:if>>성공</option>
-                <option value="FAIL" <c:if test="${status == 'FAIL'}">selected</c:if>>실패</option>
-                <option value="SKIP" <c:if test="${status == 'SKIP'}">selected</c:if>>보류</option>
+                <option value="SUCCESS" <c:if test="${searchParam.status == 'SUCCESS'}">selected</c:if>>성공</option>
+                <option value="FAIL" <c:if test="${searchParam.status == 'FAIL'}">selected</c:if>>실패</option>
+                <option value="SKIP" <c:if test="${searchParam.status == 'SKIP'}">selected</c:if>>보류</option>
             </select>
         </div>
         <div class="form-item form-item-btn">
             <input type="hidden" name="search" value="true">
+            <input type="hidden" id="page" name="page" value="1">
             <button type="submit">조회</button>
         </div>
     </div>
@@ -124,10 +125,39 @@
     </div>
 </div>
 
+<c:if test="${totalPages > 0}">
+<div class="pagination">
+    <c:if test="${currentPage > 1}">
+        <a href="#" onclick="goPage(${currentPage - 1}); return false;">&#8249;</a>
+    </c:if>
+    <c:forEach begin="${startPage}" end="${endPage}" var="p">
+        <a href="#" onclick="goPage(${p}); return false;" class="${p == currentPage ? 'active' : ''}">${p}</a>
+    </c:forEach>
+    <c:if test="${currentPage < totalPages}">
+        <a href="#" onclick="goPage(${currentPage + 1}); return false;">&#8250;</a>
+    </c:if>
+    <span class="page-info">총 ${totalCount}건</span>
+</div>
+</c:if>
+
 <script>
     if (!document.getElementById('baseDate').value) {
         document.getElementById('baseDate').value = new Date().toISOString().substring(0, 10);
     }
+
+    var isGoPage = false;
+
+    function goPage(page) {
+        isGoPage = true;
+        document.getElementById('page').value = page;
+        document.querySelector('.search-form').submit();
+    }
+
+    document.querySelector('.search-form').addEventListener('submit', function() {
+        if (!isGoPage) {
+            document.getElementById('page').value = 1;
+        }
+    });
 
     function sortKeys(obj) {
         if (Array.isArray(obj)) return obj.map(sortKeys);

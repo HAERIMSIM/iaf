@@ -1,41 +1,43 @@
 package com.iaf.controller;
 
-import com.iaf.mapper.AnalysisMapper;
-import com.iaf.mapper.OmsNotificationHistoryMapper;
+import com.iaf.model.SearchParam;
 import com.iaf.model.OmsNotificationHistory;
+import com.iaf.service.AnalysisService;
+import com.iaf.service.OmsNotificationService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 @Controller
 public class OmsController {
 
-    private final OmsNotificationHistoryMapper omsNotificationHistoryMapper;
-    private final AnalysisMapper analysisMapper;
+    private final OmsNotificationService omsNotificationService;
+    private final AnalysisService analysisService;
 
-    public OmsController(OmsNotificationHistoryMapper omsNotificationHistoryMapper, AnalysisMapper analysisMapper) {
-        this.omsNotificationHistoryMapper = omsNotificationHistoryMapper;
-        this.analysisMapper = analysisMapper;
+    public OmsController(OmsNotificationService omsNotificationService, AnalysisService analysisService) {
+        this.omsNotificationService = omsNotificationService;
+        this.analysisService = analysisService;
     }
 
     @GetMapping("/oms-history")
-    public String omsHistory(@RequestParam(required = false) String baseDate,
-                             @RequestParam(required = false) Long clientId,
-                             @RequestParam(required = false) String status,
-                             @RequestParam(name = "search", required = false) String search,
-                             Model model) {
-        model.addAttribute("clientList", analysisMapper.selectClientList());
-        model.addAttribute("baseDate", baseDate);
-        model.addAttribute("clientId", clientId);
-        model.addAttribute("status", status);
-        if (search != null) {
-            OmsNotificationHistory param = new OmsNotificationHistory();
-            param.setBaseDate(baseDate);
-            param.setClientId(clientId);
-            param.setStatus(status);
-            model.addAttribute("historyList", omsNotificationHistoryMapper.selectOmsNotificationHistory(param));
+    public String omsHistory(@ModelAttribute SearchParam searchParam, Model model) {
+        model.addAttribute("clientList", analysisService.getClientList());
+        if (searchParam.getSearch() != null) {
+            int page = searchParam.getPage();
+            int totalCount = omsNotificationService.countOmsNotificationHistory(searchParam);
+            int totalPages = (int) Math.ceil((double) totalCount / searchParam.getPageSize());
+            int startPage = Math.max(1, page - 2);
+            int endPage = Math.min(totalPages, startPage + 4);
+            startPage = Math.max(1, endPage - 4);
+            model.addAttribute("historyList", omsNotificationService.getOmsNotificationHistory(searchParam));
+            model.addAttribute("totalCount", totalCount);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("startPage", startPage);
+            model.addAttribute("endPage", endPage);
         }
+        model.addAttribute("searchParam", searchParam);
         return "omsNotificationHistory";
     }
 }

@@ -40,16 +40,17 @@
             <input type="date" id="baseDate" name="baseDate" value="${searchParam.baseDate}">
         </div>
         <div class="form-item">
-            <label for="statusFilter">상태 필터</label>
-            <select id="statusFilter" name="statusFilter">
+            <label for="status">상태 필터</label>
+            <select id="status" name="status">
                 <option value="">전체</option>
-                <option value="SAFE" <c:if test="${searchParam.statusFilter == 'SAFE'}">selected</c:if>>✅안전</option>
-                <option value="WARNING" <c:if test="${searchParam.statusFilter == 'WARNING'}">selected</c:if>>⚠️주의 (예상 소진일: 14일 이상)</option>
-                <option value="DANGER" <c:if test="${searchParam.statusFilter == 'DANGER'}">selected</c:if>>🚨위험 (예상 소진일: 7일 이상)</option>
+                <option value="SAFE" <c:if test="${searchParam.status == 'SAFE'}">selected</c:if>>✅안전</option>
+                <option value="WARNING" <c:if test="${searchParam.status == 'WARNING'}">selected</c:if>>⚠️주의 (예상 소진일: 14일 이상)</option>
+                <option value="DANGER" <c:if test="${searchParam.status == 'DANGER'}">selected</c:if>>🚨위험 (예상 소진일: 7일 이상)</option>
             </select>
         </div>
         <div class="form-item form-item-btn">
             <input type="hidden" name="search" value="true">
+            <input type="hidden" id="page" name="page" value="1">
             <button type="submit">조회</button>
         </div>
     </div>
@@ -134,15 +135,37 @@
    </tbody>
 </table>
 
+<c:if test="${totalPages > 0}">
+<div class="pagination">
+    <c:if test="${currentPage > 1}">
+        <a href="#" onclick="goPage(${currentPage - 1}); return false;">&#8249;</a>
+    </c:if>
+    <c:forEach begin="${startPage}" end="${endPage}" var="p">
+        <a href="#" onclick="goPage(${p}); return false;" class="${p == currentPage ? 'active' : ''}">${p}</a>
+    </c:forEach>
+    <c:if test="${currentPage < totalPages}">
+        <a href="#" onclick="goPage(${currentPage + 1}); return false;">&#8250;</a>
+    </c:if>
+    <span class="page-info">총 ${totalCount}건</span>
+</div>
+</c:if>
+
 <script>
     if (!document.getElementById('baseDate').value) {
         document.getElementById('baseDate').value = new Date().toISOString().substring(0, 10);
     }
 
+    var isGoPage = false;
+
+    function goPage(page) {
+        isGoPage = true;
+        document.getElementById('page').value = page;
+        document.querySelector('.search-form').submit();
+    }
+
     document.querySelector('.search-form').addEventListener('submit', function(e) {
-        if (!document.getElementById('clientId').value) {
-            e.preventDefault();
-            alert('고객사를 선택해주세요.');
+        if (!isGoPage) {
+            document.getElementById('page').value = 1;
         }
     });
 

@@ -4,7 +4,7 @@ import tools.jackson.databind.ObjectMapper;
 import com.iaf.mapper.AnalysisMapper;
 import com.iaf.mapper.OmsNotificationHistoryMapper;
 import com.iaf.model.AnalysisResult;
-import com.iaf.model.AnalysisSearchParam;
+import com.iaf.model.SearchParam;
 import com.iaf.model.Client;
 import com.iaf.model.OmsNotificationHistory;
 import org.slf4j.Logger;
@@ -36,6 +36,14 @@ public class OmsNotificationService {
         this.restClient = RestClient.create();
     }
 
+    public int countOmsNotificationHistory(SearchParam param) {
+        return omsNotificationHistoryMapper.countOmsNotificationHistory(param);
+    }
+
+    public List<OmsNotificationHistory> getOmsNotificationHistory(SearchParam param) {
+        return omsNotificationHistoryMapper.selectOmsNotificationHistory(param);
+    }
+
     public void sendNotification(String baseDate) {
         List<Client> clients = analysisMapper.selectClientList();
 
@@ -52,7 +60,7 @@ public class OmsNotificationService {
 
             long startTime = System.currentTimeMillis();
             try {
-                AnalysisSearchParam param = new AnalysisSearchParam();
+                SearchParam param = new SearchParam();
                 param.setClientId(clientId);
                 param.setBaseDate(baseDate);
                 List<AnalysisResult> alerts = analysisMapper.selectAlertsByClientAndBaseDate(param);

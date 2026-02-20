@@ -1,6 +1,6 @@
 package com.iaf.scheduler;
 
-import com.iaf.model.AnalysisSearchParam;
+import com.iaf.model.SearchParam;
 import com.iaf.service.AnalysisService;
 import com.iaf.service.BatchLogService;
 import com.iaf.service.OmsNotificationService;
@@ -34,7 +34,7 @@ public class AnalysisScheduler {
     }
 
     public void runAnalysis(String baseDate) {
-        AnalysisSearchParam param = new AnalysisSearchParam();
+        SearchParam param = new SearchParam();
         param.setBaseDate(baseDate);
 
         log.info("[{} START] baseDate: {}", BATCH_NAME_ANALYSIS, baseDate);

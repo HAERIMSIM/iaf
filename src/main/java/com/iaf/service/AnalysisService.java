@@ -2,7 +2,7 @@ package com.iaf.service;
 
 import com.iaf.mapper.AnalysisMapper;
 import com.iaf.model.AnalysisResult;
-import com.iaf.model.AnalysisSearchParam;
+import com.iaf.model.SearchParam;
 import com.iaf.model.Client;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,14 @@ public class AnalysisService {
         return analysisMapper.selectCategoryListByClientId(clientId);
     }
 
-    public List<AnalysisResult> getAnalysisResult(AnalysisSearchParam param) {
+    public int countAnalysisResult(SearchParam param) {
+        if (param.getBaseDate() == null || param.getBaseDate().isBlank()) {
+            param.setBaseDate(LocalDate.now().toString());
+        }
+        return analysisMapper.countAnalysisResult(param);
+    }
+
+    public List<AnalysisResult> getAnalysisResult(SearchParam param) {
         if (param.getBaseDate() == null || param.getBaseDate().isBlank()) {
             param.setBaseDate(LocalDate.now().toString());
         }
@@ -36,7 +43,7 @@ public class AnalysisService {
     }
 
     @Transactional
-    public int insertAnalysisResult(AnalysisSearchParam param) {
+    public int insertAnalysisResult(SearchParam param) {
         analysisMapper.deleteAnalysisResultByBaseDate(param);
         return analysisMapper.insertAnalysisResult(param);
     }

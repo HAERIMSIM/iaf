@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AnalysisService {
@@ -28,6 +29,21 @@ public class AnalysisService {
 
     public List<String> getCategoryListByClientId(Long clientId) {
         return clientMapper.selectCategoryListByClientId(clientId);
+    }
+
+    public int getAlertClientCount(SearchParam param) {
+        return analysisMapper.selectAlertClientCount(param);
+    }
+
+    public int getOmsSuccessCount(SearchParam param) {
+        return analysisMapper.selectOmsSuccessCount(param);
+    }
+
+    public Map<String, Object> getStatusSummary(SearchParam param) {
+        if (param.getBaseDate() == null || param.getBaseDate().isBlank()) {
+            param.setBaseDate(LocalDate.now().toString());
+        }
+        return analysisMapper.selectStatusSummary(param);
     }
 
     public int countAnalysisResult(SearchParam param) {

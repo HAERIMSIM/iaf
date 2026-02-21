@@ -39,6 +39,10 @@ public class OmsNotificationService {
         this.restClient = RestClient.create();
     }
 
+    public Map<String, Object> getStatusSummary(SearchParam param) {
+        return omsNotificationMapper.selectStatusSummary(param);
+    }
+
     public int countOmsNotification(SearchParam param) {
         return omsNotificationMapper.countOmsNotification(param);
     }

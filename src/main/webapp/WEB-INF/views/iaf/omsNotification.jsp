@@ -4,25 +4,7 @@
 <html>
 <head>
     <title>OMS 전송 이력</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/analysis.css">
-    <style>
-        .status-link { cursor: pointer; text-decoration: underline; }
-        .status-success { color: #28a745; }
-        .status-fail { color: #dc3545; }
-        .status-skip { color: #ffc107; }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: #fff; border-radius: 8px; width: 700px; max-height: 80vh; display: flex; flex-direction: column; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #ddd; }
-        .modal-header h3 { margin: 0; font-size: 16px; }
-        .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #666; }
-        .modal-body { padding: 20px; overflow-y: auto; }
-        .modal-body pre { background: #f5f5f5; padding: 16px; border-radius: 4px; font-size: 13px; white-space: pre-wrap; word-break: break-all; margin: 0; max-height: 50vh; overflow-y: auto; }
-        .modal-label { font-weight: bold; font-size: 13px; margin-bottom: 8px; color: #555; }
-        .resend-btn { padding: 3px 10px; font-size: 12px; cursor: pointer; background: #fff; border: 1px solid #aaa; border-radius: 4px; }
-        .resend-btn:hover { background: #f0f0f0; }
-        tbody tr { height: 38px; }
-    </style>
+
 </head>
 <body>
 
@@ -33,6 +15,10 @@
 <form method="get" action="${pageContext.request.contextPath}/omsNotification" class="search-form">
     <div class="form-row">
         <div class="form-item">
+            <label for="baseDate">기준일</label>
+            <input type="date" id="baseDate" name="baseDate" value="${searchParam.baseDate}">
+        </div>
+        <div class="form-item">
             <label for="clientId">업체(고객사)</label>
             <select id="clientId" name="clientId">
                 <option value="">전체</option>
@@ -41,14 +27,8 @@
                 </c:forEach>
             </select>
         </div>
-    </div>
-    <div class="form-row">
         <div class="form-item">
-            <label for="baseDate">기준일</label>
-            <input type="date" id="baseDate" name="baseDate" value="${searchParam.baseDate}">
-        </div>
-        <div class="form-item">
-            <label for="status">전송유형</label>
+            <label for="status">전송결과</label>
             <select id="status" name="status">
                 <option value="">전체</option>
                 <option value="SUCCESS" <c:if test="${searchParam.status == 'SUCCESS'}">selected</c:if>>성공</option>
@@ -64,13 +44,44 @@
     </div>
 </form>
 
-<table>
+<h3 class="section-title">▪ 전송 이력 요약 </h3>
+<h3 class="section-title-sub">( 업체별 마지막 전송 이력을 기준으로 조회합니다. 보류 - 보류 - 성공 시, '성공 1건' )</h3>
+<c:set var="selectedClientName" value="전체"/>
+<c:forEach var="client" items="${clientList}">
+    <c:if test="${client.clientId == searchParam.clientId}">
+        <c:set var="selectedClientName" value="${client.clientName}"/>
+    </c:if>
+</c:forEach>
+<table class="status-summary-table">
+    <thead>
+        <tr>
+            <th>기준일</th>
+            <th>업체(고객사)</th>
+            <th class="status-success">성공</th>
+            <th class="status-fail">실패</th>
+            <th class="status-skip">보류</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><c:choose><c:when test="${not empty searchParam.baseDate}">${searchParam.baseDate}</c:when><c:otherwise>-</c:otherwise></c:choose></td>
+            <td><c:choose><c:when test="${not empty statusSummary}">${selectedClientName}</c:when><c:otherwise>-</c:otherwise></c:choose></td>
+            <td class="status-success"><c:choose><c:when test="${not empty statusSummary}">${statusSummary.successCount}건</c:when><c:otherwise>-</c:otherwise></c:choose></td>
+            <td class="status-fail"><c:choose><c:when test="${not empty statusSummary}">${statusSummary.failCount}건</c:when><c:otherwise>-</c:otherwise></c:choose></td>
+            <td class="status-skip"><c:choose><c:when test="${not empty statusSummary}">${statusSummary.skipCount}건</c:when><c:otherwise>-</c:otherwise></c:choose></td>
+        </tr>
+    </tbody>
+</table>
+
+<h3 class="section-title">▪️전송 이력 상세</h3>
+<table class="oms-detail">
     <colgroup>
-        <col style="width:12%">
-        <col style="width:24%">
-        <col style="width:10%">
         <col style="width:10%">
         <col style="width:18%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:14%">
+        <col style="width:34%">
         <col style="width:8%">
     </colgroup>
     <thead>
@@ -80,6 +91,7 @@
             <th>전송결과</th>
             <th>소요시간</th>
             <th>전송일시</th>
+            <th>메세지</th>
             <th>재발송</th>
         </tr>
     </thead>
@@ -92,19 +104,21 @@
                         <td>${row.omsUrl}</td>
                         <td>
                             <c:choose>
-                                <c:when test="${row.status == 'SUCCESS'}">
-                                    <span class="status-link status-success" onclick="showDetail(${idx.index})">성공</span>
-                                </c:when>
-                                <c:when test="${row.status == 'FAIL'}">
-                                    <span class="status-link status-fail" onclick="showDetail(${idx.index})">실패</span>
-                                </c:when>
-                                <c:when test="${row.status == 'SKIP'}">
-                                    <span class="status-link status-skip" onclick="showDetail(${idx.index})">보류</span>
-                                </c:when>
+                                <c:when test="${row.status == 'SUCCESS'}"><span class="status-success">성공</span></c:when>
+                                <c:when test="${row.status == 'FAIL'}"><span class="status-fail">실패</span></c:when>
+                                <c:when test="${row.status == 'SKIP'}"><span class="status-skip">보류</span></c:when>
                             </c:choose>
                         </td>
                         <td>${row.elapsedMs}ms</td>
                         <td>${row.createdAt}</td>
+                        <td style="text-align:left;">
+                            <c:choose>
+                                <c:when test="${row.status == 'SUCCESS'}">
+                                    <span class="status-link" onclick="showDetail(${idx.index})">전송 메세지 상세보기</span>
+                                </c:when>
+                                <c:otherwise>${row.errorMessage}</c:otherwise>
+                            </c:choose>
+                        </td>
                         <td>
                             <c:if test="${row.status == 'FAIL' or row.status == 'SKIP'}">
                                 <button class="resend-btn" onclick="resend('${row.baseDate}', ${row.clientId}, '${row.clientName}')">재발송</button>
@@ -116,7 +130,7 @@
             </c:when>
             <c:otherwise>
                 <tr>
-                    <td colspan="6" class="no-data">데이터가 없습니다.</td>
+                    <td colspan="7" class="no-data">데이터가 없습니다.</td>
                 </tr>
             </c:otherwise>
         </c:choose>
@@ -146,13 +160,16 @@
     <c:if test="${currentPage < totalPages}">
         <a href="#" onclick="goPage(${currentPage + 1}); return false;">&#8250;</a>
     </c:if>
-    <span class="page-info">총 ${totalCount}건</span>
 </div>
 </c:if>
 
 <script>
-    if (!document.getElementById('baseDate').value) {
-        document.getElementById('baseDate').value = new Date().toISOString().substring(0, 10);
+    var now = new Date();
+    var today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    var baseDateEl = document.getElementById('baseDate');
+    baseDateEl.max = today;
+    if (!baseDateEl.value) {
+        baseDateEl.value = today;
     }
 
     var isGoPage = false;

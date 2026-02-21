@@ -29,6 +29,7 @@ public class OmsController {
     public String omsHistory(@ModelAttribute SearchParam searchParam, Model model) {
         model.addAttribute("clientList", analysisService.getClientList());
         if (searchParam.getSearch() != null) {
+            model.addAttribute("statusSummary", omsNotificationService.getStatusSummary(searchParam));
             int page = searchParam.getPage();
             int totalCount = omsNotificationService.countOmsNotification(searchParam);
             int totalPages = (int) Math.ceil((double) totalCount / searchParam.getPageSize());

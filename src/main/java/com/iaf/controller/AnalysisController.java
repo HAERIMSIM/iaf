@@ -30,6 +30,9 @@ public class AnalysisController {
             model.addAttribute("categoryList", analysisService.getCategoryListByClientId(searchParam.getClientId()));
         }
         if (searchParam.getSearch() != null) {
+            model.addAttribute("statusSummary", analysisService.getStatusSummary(searchParam));
+            model.addAttribute("alertClientCount", analysisService.getAlertClientCount(searchParam));
+            model.addAttribute("omsSuccessCount", analysisService.getOmsSuccessCount(searchParam));
             int page = searchParam.getPage();
             int totalCount = analysisService.countAnalysisResult(searchParam);
             int totalPages = (int) Math.ceil((double) totalCount / searchParam.getPageSize());

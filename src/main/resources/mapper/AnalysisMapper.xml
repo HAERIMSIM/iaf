@@ -3,6 +3,43 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.iaf.mapper.AnalysisMapper">
 
+    <select id="selectStatusSummary" parameterType="SearchParam" resultType="java.util.Map">
+        SELECT
+            SUM(CASE WHEN status = 'SAFE'    THEN 1 ELSE 0 END) AS safeCount,
+            SUM(CASE WHEN status = 'WARNING' THEN 1 ELSE 0 END) AS warningCount,
+            SUM(CASE WHEN status = 'DANGER'  THEN 1 ELSE 0 END) AS dangerCount
+        FROM ANALYSIS_RESULT
+        WHERE base_date = #{baseDate}
+        <if test="clientId != null">
+            AND client_id = #{clientId}
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+    </select>
+
+    <select id="selectAlertClientCount" parameterType="SearchParam" resultType="int">
+        SELECT COUNT(DISTINCT client_id)
+        FROM ANALYSIS_RESULT
+        WHERE base_date = #{baseDate}
+          AND status IN ('WARNING', 'DANGER')
+        <if test="clientId != null">AND client_id = #{clientId}</if>
+        <if test="category != null and category != ''">AND category = #{category}</if>
+    </select>
+
+    <select id="selectOmsSuccessCount" parameterType="SearchParam" resultType="int">
+        SELECT COUNT(*)
+        FROM OMS_NOTIFICATION
+        WHERE history_id IN (
+            SELECT MAX(history_id)
+            FROM OMS_NOTIFICATION
+            WHERE base_date = #{baseDate}
+            <if test="clientId != null">AND client_id = #{clientId}</if>
+            GROUP BY client_id
+        )
+          AND status = 'SUCCESS'
+    </select>
+
     <delete id="deleteAnalysisResultByBaseDate">
         DELETE FROM ANALYSIS_RESULT
         WHERE base_date = #{baseDate}

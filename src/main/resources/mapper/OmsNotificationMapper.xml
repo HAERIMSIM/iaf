@@ -8,6 +8,26 @@
         VALUES (#{baseDate}, #{clientId}, #{omsUrl}, #{requestPayload}, #{status}, #{errorMessage}, #{elapsedMs})
     </insert>
 
+    <select id="selectStatusSummary" parameterType="SearchParam" resultType="java.util.Map">
+        SELECT
+            SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) AS successCount,
+            SUM(CASE WHEN status = 'FAIL'    THEN 1 ELSE 0 END) AS failCount,
+            SUM(CASE WHEN status = 'SKIP'    THEN 1 ELSE 0 END) AS skipCount
+        FROM OMS_NOTIFICATION h
+        WHERE h.history_id IN (
+            SELECT MAX(history_id)
+            FROM OMS_NOTIFICATION
+            WHERE 1=1
+            <if test="baseDate != null and baseDate != ''">
+                AND base_date = #{baseDate}
+            </if>
+            <if test="clientId != null">
+                AND client_id = #{clientId}
+            </if>
+            GROUP BY client_id
+        )
+    </select>
+
     <select id="countOmsNotification" parameterType="SearchParam" resultType="int">
         SELECT COUNT(*)
         FROM OMS_NOTIFICATION h

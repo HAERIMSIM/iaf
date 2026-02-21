@@ -1,6 +1,6 @@
 package com.iaf.model;
 
-public class OmsNotificationHistory {
+public class OmsNotification {
     private Long historyId;
     private String baseDate;
     private Long clientId;

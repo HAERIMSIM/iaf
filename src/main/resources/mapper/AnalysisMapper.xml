@@ -3,21 +3,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.iaf.mapper.AnalysisMapper">
 
-    <select id="selectClientList" resultType="Client">
-        SELECT client_id, client_name, status, oms_url
-        FROM CLIENT
-        WHERE status = 'ACTIVE'
-        ORDER BY client_name
-    </select>
-
-    <select id="selectCategoryListByClientId" parameterType="Long" resultType="String">
-        SELECT DISTINCT category
-        FROM SKU
-        WHERE category IS NOT NULL
-          AND client_id = #{clientId}
-        ORDER BY category
-    </select>
-
     <delete id="deleteAnalysisResultByBaseDate">
         DELETE FROM ANALYSIS_RESULT
         WHERE base_date = #{baseDate}
@@ -139,10 +124,10 @@
         FROM ANALYSIS_RESULT ar
         LEFT JOIN (
             SELECT client_id, base_date, status
-            FROM OMS_NOTIFICATION_HISTORY
+            FROM OMS_NOTIFICATION
             WHERE history_id IN (
                 SELECT MAX(history_id)
-                FROM OMS_NOTIFICATION_HISTORY
+                FROM OMS_NOTIFICATION
                 GROUP BY client_id, base_date
             )
         ) onh ON ar.client_id = onh.client_id AND ar.base_date = onh.base_date

@@ -1,6 +1,7 @@
 package com.iaf.service;
 
 import com.iaf.mapper.AnalysisMapper;
+import com.iaf.mapper.ClientMapper;
 import com.iaf.model.AnalysisResult;
 import com.iaf.model.SearchParam;
 import com.iaf.model.Client;
@@ -14,18 +15,19 @@ import java.util.List;
 public class AnalysisService {
 
     private final AnalysisMapper analysisMapper;
+    private final ClientMapper clientMapper;
 
-    public AnalysisService(AnalysisMapper analysisMapper) {
+    public AnalysisService(AnalysisMapper analysisMapper, ClientMapper clientMapper) {
         this.analysisMapper = analysisMapper;
+        this.clientMapper = clientMapper;
     }
 
-    // Spring 4.3+ : 단일 생성자 = 자동 주입
     public List<Client> getClientList() {
-        return analysisMapper.selectClientList();
+        return clientMapper.selectClientList();
     }
 
     public List<String> getCategoryListByClientId(Long clientId) {
-        return analysisMapper.selectCategoryListByClientId(clientId);
+        return clientMapper.selectCategoryListByClientId(clientId);
     }
 
     public int countAnalysisResult(SearchParam param) {

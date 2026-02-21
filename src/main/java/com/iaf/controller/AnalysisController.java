@@ -53,9 +53,9 @@ public class AnalysisController {
         return analysisService.getCategoryListByClientId(clientId);
     }
 
-    @GetMapping("/analysis/test")
+    @GetMapping("/analysis/batchAll")
     @ResponseBody
-    public String testAnalysis(@RequestParam String baseDate) {
+    public String batchAll(@RequestParam String baseDate) {
         analysisScheduler.runAnalysis(baseDate);
         return "OK";
     }

@@ -19,6 +19,9 @@
         .modal-body { padding: 20px; overflow-y: auto; }
         .modal-body pre { background: #f5f5f5; padding: 16px; border-radius: 4px; font-size: 13px; white-space: pre-wrap; word-break: break-all; margin: 0; max-height: 50vh; overflow-y: auto; }
         .modal-label { font-weight: bold; font-size: 13px; margin-bottom: 8px; color: #555; }
+        .resend-btn { padding: 3px 10px; font-size: 12px; cursor: pointer; background: #fff; border: 1px solid #aaa; border-radius: 4px; }
+        .resend-btn:hover { background: #f0f0f0; }
+        tbody tr { height: 38px; }
     </style>
 </head>
 <body>
@@ -27,7 +30,7 @@
 <jsp:include page="../common/menu.jsp"/>
 <h2> OMS 전송 이력 </h2>
 
-<form method="get" action="${pageContext.request.contextPath}/oms-history" class="search-form">
+<form method="get" action="${pageContext.request.contextPath}/omsNotification" class="search-form">
     <div class="form-row">
         <div class="form-item">
             <label for="clientId">업체(고객사)</label>
@@ -64,10 +67,11 @@
 <table>
     <colgroup>
         <col style="width:12%">
-        <col style="width:26%">
-        <col style="width:12%">
-        <col style="width:12%">
-        <col style="width:20%">
+        <col style="width:24%">
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:18%">
+        <col style="width:8%">
     </colgroup>
     <thead>
         <tr>
@@ -76,13 +80,14 @@
             <th>전송결과</th>
             <th>소요시간</th>
             <th>전송일시</th>
+            <th>재발송</th>
         </tr>
     </thead>
     <tbody>
         <c:choose>
             <c:when test="${not empty historyList}">
                 <c:forEach var="row" items="${historyList}" varStatus="idx">
-                    <tr>
+                    <tr data-client-id="${row.clientId}">
                         <td>${row.clientName}</td>
                         <td>${row.omsUrl}</td>
                         <td>
@@ -100,13 +105,18 @@
                         </td>
                         <td>${row.elapsedMs}ms</td>
                         <td>${row.createdAt}</td>
+                        <td>
+                            <c:if test="${row.status == 'FAIL' or row.status == 'SKIP'}">
+                                <button class="resend-btn" onclick="resend('${row.baseDate}', ${row.clientId}, '${row.clientName}')">재발송</button>
+                            </c:if>
+                        </td>
                     </tr>
                     <textarea class="hidden-payload" style="display:none" data-status="${row.status}" data-client="${row.clientName}" data-error="${row.errorMessage}">${row.requestPayload}</textarea>
                 </c:forEach>
             </c:when>
             <c:otherwise>
                 <tr>
-                    <td colspan="5" class="no-data">데이터가 없습니다.</td>
+                    <td colspan="6" class="no-data">데이터가 없습니다.</td>
                 </tr>
             </c:otherwise>
         </c:choose>
@@ -207,6 +217,40 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeModal();
     });
+
+    var contextPath = '${pageContext.request.contextPath}';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var seen = {};
+        document.querySelectorAll('tbody tr[data-client-id]').forEach(function(tr) {
+            var clientId = tr.dataset.clientId;
+            if (seen[clientId]) {
+                var btn = tr.querySelector('.resend-btn');
+                if (btn) btn.remove();
+            } else {
+                seen[clientId] = true;
+            }
+        });
+    });
+
+    function resend(baseDate, clientId, clientName) {
+        if (!confirm('[' + baseDate + '] ' + clientName + '\n재발송하시겠습니까?')) return;
+        fetch(contextPath + '/oms/resendOne', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'baseDate=' + encodeURIComponent(baseDate) + '&clientId=' + clientId
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.result === 'OK') {
+                alert('재발송 완료. 이력을 새로고침합니다.');
+            } else {
+                alert('재발송 실패: ' + (data.message || '알 수 없는 오류'));
+            }
+            location.reload();
+        })
+        .catch(function() { alert('재발송 중 오류가 발생했습니다.'); });
+    }
 </script>
 </body>
 </html>

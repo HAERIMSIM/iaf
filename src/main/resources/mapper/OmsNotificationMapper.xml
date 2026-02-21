@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.iaf.mapper.OmsNotificationHistoryMapper">
+<mapper namespace="com.iaf.mapper.OmsNotificationMapper">
 
-    <insert id="insertOmsNotificationHistory" parameterType="OmsNotificationHistory">
-        INSERT INTO OMS_NOTIFICATION_HISTORY (base_date, client_id, oms_url, request_payload, status, error_message, elapsed_ms)
+    <insert id="insertOmsNotification" parameterType="OmsNotification">
+        INSERT INTO OMS_NOTIFICATION (base_date, client_id, oms_url, request_payload, status, error_message, elapsed_ms)
         VALUES (#{baseDate}, #{clientId}, #{omsUrl}, #{requestPayload}, #{status}, #{errorMessage}, #{elapsedMs})
     </insert>
 
-    <select id="countOmsNotificationHistory" parameterType="SearchParam" resultType="int">
+    <select id="countOmsNotification" parameterType="SearchParam" resultType="int">
         SELECT COUNT(*)
-        FROM OMS_NOTIFICATION_HISTORY h
+        FROM OMS_NOTIFICATION h
         WHERE 1=1
         <if test="baseDate != null and baseDate != ''">
             AND h.base_date = #{baseDate}
@@ -23,10 +23,10 @@
         </if>
     </select>
 
-    <select id="selectOmsNotificationHistory" parameterType="SearchParam" resultType="OmsNotificationHistory">
+    <select id="selectOmsNotification" parameterType="SearchParam" resultType="OmsNotification">
         SELECT h.history_id, h.base_date, h.client_id, c.client_name, h.oms_url,
                h.request_payload, h.status, h.error_message, h.elapsed_ms, h.created_at
-        FROM OMS_NOTIFICATION_HISTORY h
+        FROM OMS_NOTIFICATION h
         LEFT JOIN CLIENT c ON h.client_id = c.client_id
         WHERE 1=1
         <if test="baseDate != null and baseDate != ''">

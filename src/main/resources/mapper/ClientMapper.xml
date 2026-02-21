@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iaf.mapper.ClientMapper">
+
+    <select id="selectClientList" resultType="Client">
+        SELECT client_id, client_name, status, oms_url
+        FROM CLIENT
+        WHERE status = 'ACTIVE'
+        ORDER BY client_name
+    </select>
+
+    <select id="selectClientById" parameterType="long" resultType="Client">
+        SELECT client_id, client_name, status, oms_url
+        FROM CLIENT
+        WHERE client_id = #{clientId}
+    </select>
+
+    <select id="selectCategoryListByClientId" parameterType="Long" resultType="String">
+        SELECT DISTINCT category
+        FROM SKU
+        WHERE category IS NOT NULL
+          AND client_id = #{clientId}
+        ORDER BY category
+    </select>
+
+</mapper>
